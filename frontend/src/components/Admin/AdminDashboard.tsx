@@ -378,21 +378,23 @@ export function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="bookings" className="space-y-6">
-          <BookingTable
-            bookings={filteredBookings}
-            filter={filter}
-            setFilter={setFilter}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            resetFilters={resetFilters}
-            onApprove={handleApproveBooking}
-            onReject={handleRejectBooking}
-            onDelete={handleDeleteBooking}
-            onEdit={setEditBooking}
-            bookingStats={bookingStats}
-            bookingsLoading={bookingsLoading}
-            bookingsError={bookingsError}
-          />
+          <div className="overflow-x-auto">
+            <BookingTable
+              bookings={filteredBookings}
+              filter={filter}
+              setFilter={setFilter}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              resetFilters={resetFilters}
+              onApprove={handleApproveBooking}
+              onReject={handleRejectBooking}
+              onDelete={handleDeleteBooking}
+              onEdit={setEditBooking}
+              bookingStats={bookingStats}
+              bookingsLoading={bookingsLoading}
+              bookingsError={bookingsError}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="rooms" className="space-y-6">

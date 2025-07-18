@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import Swal from 'sweetalert2';
+import { Layout } from '../Layout/Layout';
 
 const AdminRegister = () => {
   const [email, setEmail] = useState('');
@@ -42,6 +43,7 @@ const AdminRegister = () => {
   };
 
   return (
+    <Layout>
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
@@ -132,6 +134,7 @@ const AdminRegister = () => {
         </Card>
       </div>
     </div>
+    </Layout>
   );
 };
 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
+import { Layout } from '../Layout/Layout';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -32,6 +33,7 @@ const AdminLogin = () => {
   };
 
   return (
+    <Layout>
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
@@ -133,6 +135,7 @@ const AdminLogin = () => {
         </div>
       </div>
     </div>
+    </Layout>
   );
 };
 

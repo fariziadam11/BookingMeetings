@@ -4,8 +4,6 @@ import (
 	"backendgo/config"
 	"backendgo/models"
 	"fmt"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,7 +13,7 @@ func CreateBookingService(input models.CreateBookingInput) (*models.Booking, err
 	// Parse room ID as UUID
 	roomUUID, err := uuid.Parse(input.RoomID)
 	if err != nil {
-		return nil, fmt.Errorf("Format ID ruangan tidak valid")
+		return nil, fmt.Errorf("format ID ruangan tidak valid")
 	}
 
 	// Validate booking conflicts
@@ -25,16 +23,16 @@ func CreateBookingService(input models.CreateBookingInput) (*models.Booking, err
 			roomUUID, input.EndTime, input.EndTime, input.StartTime, input.StartTime, input.StartTime, input.EndTime).
 		Count(&count)
 	if count > 0 {
-		return nil, fmt.Errorf("Jadwal booking bentrok dengan jadwal yang sudah ada")
+		return nil, fmt.Errorf("jadwal booking bentrok dengan jadwal yang sudah ada")
 	}
 
 	// Validate room capacity
 	var room models.Room
 	if err := config.DB.First(&room, roomUUID).Error; err != nil {
-		return nil, fmt.Errorf("Ruangan tidak ditemukan")
+		return nil, fmt.Errorf("ruangan tidak ditemukan")
 	}
 	if input.Attendees > room.Capacity {
-		return nil, fmt.Errorf("Jumlah peserta melebihi kapasitas ruangan")
+		return nil, fmt.Errorf("jumlah peserta melebihi kapasitas ruangan")
 	}
 
 	// Generate token for QR code
@@ -56,26 +54,10 @@ func CreateBookingService(input models.CreateBookingInput) (*models.Booking, err
 	}
 
 	if err := config.DB.Create(&booking).Error; err != nil {
-		return nil, fmt.Errorf("Gagal membuat booking")
+		return nil, fmt.Errorf("gagal membuat booking")
 	}
 
-	// Send email notification to user
-	// (EmailService bisa dipanggil di handler jika ingin inject dependency)
-	// go func() {
-	// 	h.EmailService.SendBookingNotification(&booking, &room, qrBase64)
-	// }()
-
-	// Send email notification to admin(s)
-	adminEmails := os.Getenv("ADMIN_EMAIL")
-	if adminEmails != "" {
-		emails := strings.Split(adminEmails, ",")
-		for _, adminEmail := range emails {
-			adminEmail = strings.TrimSpace(adminEmail)
-			if adminEmail != "" {
-				// Send email to admin (implementasi di handler)
-			}
-		}
-	}
+	// TODO: Implement email notification to user and admin in handler if needed
 
 	return &booking, nil
 }
