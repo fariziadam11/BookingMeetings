@@ -6,6 +6,8 @@ import (
 	"backendgo/services"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"encoding/base64"
@@ -205,6 +207,24 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error(), "data": nil})
 		return
 	}
+	// Kirim email notifikasi ke user (dan admin)
+	go func() {
+		var room models.Room
+		if err := config.DB.First(&room, booking.RoomID).Error; err == nil {
+			h.EmailService.SendBookingNotification(booking, &room, "")
+			// Notifikasi ke admin
+			adminEmails := os.Getenv("ADMIN_EMAIL")
+			if adminEmails != "" {
+				emails := strings.Split(adminEmails, ",")
+				for _, adminEmail := range emails {
+					adminEmail = strings.TrimSpace(adminEmail)
+					if adminEmail != "" {
+						h.EmailService.SendBookingNotificationToAdmin(booking, &room, adminEmail)
+					}
+				}
+			}
+		}
+	}()
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil dibuat", "data": booking})
 }
 

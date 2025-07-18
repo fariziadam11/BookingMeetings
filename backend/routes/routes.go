@@ -23,7 +23,6 @@ func RegisterRoutes(r *gin.Engine, bookingHandler *handlers.BookingHandler) {
 
 		api.GET("/bookings", bookingHandler.GetBookings)
 		api.GET("/bookings/:id", bookingHandler.GetBookingByID)
-		api.POST("/bookings", bookingHandler.CreateBooking)
 
 		api.POST("/rooms", middleware.AuthMiddleware(), middleware.AdminOnly(), handlers.CreateRoom)
 		api.PUT("/rooms/:id", middleware.AuthMiddleware(), middleware.AdminOnly(), handlers.UpdateRoom)
