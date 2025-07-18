@@ -6,7 +6,7 @@ import { useDeleteRoom } from '../../hooks/Room/useDeleteRoom';
 import { useDeleteBooking } from '../../hooks/Booking/useDeleteBooking';
 import { useApproveBooking } from '../../hooks/Approval/useApproveBooking';
 import { useRejectBooking } from '../../hooks/Approval/useRejectBooking';
-import { CheckCircle, XCircle, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Swal from 'sweetalert2';
 import useBookingFilters from '../../hooks/Booking/useBookingFilters';
 import type { Booking, BookingStats } from '../../types/booking';
@@ -15,11 +15,9 @@ import type { Room } from '../../types/room';
 // UI Components
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { TableCell, TableRow } from '../ui/Table';
 import EditBookingModal from '../Booking/EditBookingModal';
 import { useUpdateBooking } from '../../hooks/Booking/useUpdateBooking';
 import BookingTable from './BookingTable';
@@ -40,38 +38,6 @@ const showConfirmDialog = async (message: string): Promise<boolean> => {
     cancelButtonText: 'Cancel',
   });
   return result.isConfirmed;
-};
-
-// Stats Card Component
-const StatsCard = ({ 
-  title, 
-  count, 
-  icon: Icon, 
-  variant = "default"
-}: { 
-  title: string; 
-  count: number; 
-  icon: React.ComponentType<any>; 
-  variant?: "default" | "success" | "warning" | "destructive"
-}) => {
-  const iconColors = {
-    default: "text-primary",
-    success: "text-green-600",
-    warning: "text-amber-600",
-    destructive: "text-red-600"
-  };
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={`h-4 w-4 ${iconColors[variant]}`} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{count}</div>
-      </CardContent>
-    </Card>
-  );
 };
 
 // Room Form Component
@@ -146,92 +112,6 @@ const RoomForm = ({
         </form>
       </CardContent>
     </Card>
-  );
-};
-
-// Booking Row Component
-const BookingRow = ({ 
-  booking, 
-  onApprove, 
-  onReject, 
-  onDelete, 
-  onEdit 
-}: { 
-  booking: Booking;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
-  onDelete: (id: string) => void;
-  onEdit: (booking: Booking) => void;
-}) => {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge variant="success">Approved</Badge>;
-      case 'pending':
-        return <Badge variant="warning">Pending</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('id-ID', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }) + ' WIB';
-  };
-
-  return (
-    <TableRow>
-      <TableCell>
-        <div className="space-y-1">
-          <div className="font-medium">{booking.room_name || `Room ${booking.room_id}`}</div>
-          <div className="text-sm text-muted-foreground">
-            {formatDateTime(booking.start_time)} - {formatDateTime(booking.end_time)}
-          </div>
-        </div>
-      </TableCell>
-      
-      <TableCell>
-        <div className="space-y-1">
-          <div className="font-medium">{booking.user_name}</div>
-          <div className="text-sm text-muted-foreground">{booking.user_email}</div>
-        </div>
-      </TableCell>
-      
-      <TableCell>
-        <div className="max-w-xs truncate">{booking.purpose}</div>
-      </TableCell>
-      
-      <TableCell>{getStatusBadge(booking.status)}</TableCell>
-      
-      <TableCell>
-        <div className="flex items-center gap-2">
-          {booking.status === 'pending' && (
-            <>
-              <Button size="sm" onClick={() => onApprove(booking.id)}>
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Approve
-              </Button>
-              <Button size="sm" variant="destructive" onClick={() => onReject(booking.id)}>
-                <XCircle className="h-3 w-3 mr-1" />
-                Reject
-              </Button>
-            </>
-          )}
-          <Button size="sm" variant="outline" onClick={() => onEdit(booking)}>
-            Edit
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => onDelete(booking.id)}>
-            Delete
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
   );
 };
 

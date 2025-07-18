@@ -9,12 +9,11 @@ const ManualScanQRCode: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState<'idle'|'processing'|'done'>('idle');
-  const [message, setMessage] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
-    setFiles([]); setProgress(0); setTotal(0); setStatus('idle'); setMessage('');
+    setFiles([]); setProgress(0); setTotal(0); setStatus('idle');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -71,7 +70,6 @@ const ManualScanQRCode: React.FC = () => {
     }
     setFiles(newFiles);
     setStatus('done');
-    setMessage(newFiles.filter(f => f.status === 'success').length > 0 ? 'Selesai' : 'Tidak ada file berhasil diproses');
   };
 
   return (

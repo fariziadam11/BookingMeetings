@@ -1,9 +1,10 @@
 package config
 
 import (
+	"log"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
 )
 
 var DB *gorm.DB
@@ -15,4 +16,4 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect to database!", err)
 	}
 	DB = database
-} 
+}
