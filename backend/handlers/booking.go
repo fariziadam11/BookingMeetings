@@ -6,29 +6,19 @@ import (
 	"backendgo/services"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 
 	"encoding/base64"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 )
 
 type BookingHandler struct {
 	EmailService *services.EmailService
-}
-
-type CreateBookingInput struct {
-	UserEmail string    `json:"user_email" binding:"required"`
-	UserName  string    `json:"user_name" binding:"required"`
-	Purpose   string    `json:"purpose" binding:"required"`
-	Attendees int       `json:"attendees" binding:"required"`
-	RoomID    string    `json:"room_id" binding:"required"`
-	StartTime time.Time `json:"start_time" binding:"required"`
-	EndTime   time.Time `json:"end_time" binding:"required"`
 }
 
 type UpdateBookingInput struct {
@@ -195,108 +185,27 @@ func (h *BookingHandler) GetBookingByID(c *gin.Context) {
 }
 
 func (h *BookingHandler) CreateBooking(c *gin.Context) {
-	var input CreateBookingInput
+	var input models.CreateBookingInput
 	if err := c.ShouldBindJSON(&input); err != nil {
+		log.Warnf("Invalid input: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error(), "data": nil})
 		return
 	}
+	validate := validator.New()
+	if err := validate.Struct(input); err != nil {
+		log.Warnf("Validation failed: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Validasi input gagal", "data": nil})
+		return
+	}
 
-	// Parse room ID as UUID
-	roomUUID, err := uuid.Parse(input.RoomID)
+	// Panggil service untuk logic utama
+	booking, err := services.CreateBookingService(input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Format ID ruangan tidak valid", "data": nil})
+		log.Errorf("Failed to create booking: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error(), "data": nil})
 		return
 	}
-
-	// Validate booking conflicts
-	var count int64
-	config.DB.Model(&models.Booking{}).
-		Where("room_id = ? AND ((start_time < ? AND end_time > ?) OR (start_time < ? AND end_time > ?) OR (start_time >= ? AND end_time <= ?))",
-			roomUUID, input.EndTime, input.EndTime, input.StartTime, input.StartTime, input.StartTime, input.EndTime).
-		Count(&count)
-	if count > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Jadwal booking bentrok dengan jadwal yang sudah ada", "data": nil})
-		return
-	}
-
-	// Validate room capacity
-	var room models.Room
-	if err := config.DB.First(&room, roomUUID).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Ruangan tidak ditemukan", "data": nil})
-		return
-	}
-	if input.Attendees > room.Capacity {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Jumlah peserta melebihi kapasitas ruangan", "data": nil})
-		return
-	}
-
-	// Generate token for QR code
-	token := uuid.New().String()
-	createdAt := time.Now()
-
-	// Status booking selalu 'pending' saat dibuat
-	status := "pending"
-
-	// Generate QR code hanya jika status == "approved"
-	qrBase64 := ""
-	if status == "approved" {
-		deleteURL := fmt.Sprintf("http://localhost:8080/api/bookings/delete/%s", token)
-		qr, err := qrcode.Encode(deleteURL, qrcode.Medium, 256)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Gagal membuat QR code", "data": nil})
-			return
-		}
-		qrBase64 = base64.StdEncoding.EncodeToString(qr)
-	}
-
-	booking := models.Booking{
-		RoomID:      roomUUID,
-		UserName:    input.UserName,
-		UserEmail:   input.UserEmail,
-		Purpose:     input.Purpose,
-		Attendees:   input.Attendees,
-		StartTime:   input.StartTime,
-		EndTime:     input.EndTime,
-		Status:      status, // Pakai status dari input
-		QRCodeToken: token,
-		CreatedAt:   createdAt,
-	}
-
-	if err := config.DB.Create(&booking).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Gagal membuat booking", "data": nil})
-		return
-	}
-
-	// Send email notification to user
-	go func() {
-		h.EmailService.SendBookingNotification(&booking, &room, qrBase64)
-	}()
-
-	// Send email notification to admin(s)
-	adminEmails := os.Getenv("ADMIN_EMAIL")
-	if adminEmails != "" {
-		emails := strings.Split(adminEmails, ",")
-		for _, adminEmail := range emails {
-			adminEmail = strings.TrimSpace(adminEmail)
-			if adminEmail != "" {
-				go func(email string) {
-					h.EmailService.SendBookingNotificationToAdmin(&booking, &room, email)
-				}(adminEmail)
-			}
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Booking berhasil dibuat",
-		"data":    booking,
-		"delete_url": func() string {
-			if status == "approved" {
-				return fmt.Sprintf("http://localhost:8080/api/bookings/delete/%s", token)
-			}
-			return ""
-		}(),
-	})
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil dibuat", "data": booking})
 }
 
 func (h *BookingHandler) ApproveBooking(c *gin.Context) {

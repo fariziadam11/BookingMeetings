@@ -24,6 +24,16 @@ type Booking struct {
 	Room Room `json:"room,omitempty" gorm:"foreignKey:RoomID;references:ID"`
 }
 
+type CreateBookingInput struct {
+	UserEmail string    `json:"user_email" binding:"required"`
+	UserName  string    `json:"user_name" binding:"required"`
+	Purpose   string    `json:"purpose" binding:"required"`
+	Attendees int       `json:"attendees" binding:"required"`
+	RoomID    string    `json:"room_id" binding:"required"`
+	StartTime time.Time `json:"start_time" binding:"required"`
+	EndTime   time.Time `json:"end_time" binding:"required"`
+}
+
 func (Booking) TableName() string {
 	return "bookings"
 }

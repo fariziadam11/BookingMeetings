@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -31,6 +32,29 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+			c.Abort()
+			return
+		}
+		// Cek expiry (exp)
+		expVal, ok := claims["exp"]
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token missing expiry"})
+			c.Abort()
+			return
+		}
+		var exp int64
+		switch v := expVal.(type) {
+		case float64:
+			exp = int64(v)
+		case int64:
+			exp = v
+		default:
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid exp in token"})
+			c.Abort()
+			return
+		}
+		if exp < time.Now().Unix() {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})
 			c.Abort()
 			return
 		}

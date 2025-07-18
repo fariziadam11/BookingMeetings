@@ -15,6 +15,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/ulule/limiter/v3"
+	ginmiddleware "github.com/ulule/limiter/v3/drivers/middleware/gin"
+	memory "github.com/ulule/limiter/v3/drivers/store/memory"
 )
 
 func main() {
@@ -46,6 +49,15 @@ func main() {
 		c.Set("emailService", emailService)
 		c.Next()
 	})
+
+	// Rate limiting: 5 requests per minute per IP
+	rate, _ := limiter.NewRateFromFormatted("5-M")
+	store := memory.NewStore()
+	rateLimiter := ginmiddleware.NewMiddleware(limiter.New(store, rate))
+
+	// Daftarkan route booking POST dengan rate limiter
+	r.POST("/api/bookings", rateLimiter, bookingHandler.CreateBooking)
+	// Daftarkan route lain seperti biasa
 	routes.RegisterRoutes(r, bookingHandler)
 
 	go func() {
