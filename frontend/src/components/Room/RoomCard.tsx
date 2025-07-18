@@ -1,4 +1,4 @@
-import { Building, Users, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
+import { Users, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import BookingCard from '../Booking/BookingCard';
 import EmptyState from '../Common/EmptyState';
 import type { Room } from '../../types/room';
@@ -25,7 +25,7 @@ const RoomCard = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between sm:justify-start space-x-3 mb-2">
               <div className="flex items-center space-x-3 min-w-0 flex-1">
-                <Building className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                <img src="/img/gis.png" alt="Room" className="h-7 w-7 object-contain flex-shrink-0 rounded" />
                 <h3 className="text-lg font-semibold text-gray-900 truncate">{room.name}</h3>
               </div>
               <button

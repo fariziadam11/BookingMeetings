@@ -108,12 +108,6 @@ export function HomePage() {
                 End Meeting with QR
               </Link>
             </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link to="/admin/login">
-                <Building2 className="h-5 w-5 mr-2" />
-                Admin Access
-              </Link>
-            </Button>
           </div>
         </section>
 
@@ -178,7 +172,7 @@ export function HomePage() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center gap-2">
-                          <Building2 className="h-5 w-5 text-primary" />
+                          <img src="/img/gis.png" alt="Room" className="h-7 w-7 object-contain flex-shrink-0 rounded" />
                           {room.name}
                         </CardTitle>
                         {room.description && (

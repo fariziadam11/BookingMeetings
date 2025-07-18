@@ -36,6 +36,7 @@ type UpdateBookingInput struct {
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time"`
 	Status    string    `json:"status"`
+	Purpose   string    `json:"purpose"`
 }
 
 type BookingResponse struct {
@@ -416,6 +417,9 @@ func (h *BookingHandler) UpdateBooking(c *gin.Context) {
 	}
 	if input.Status != "" {
 		booking.Status = input.Status
+	}
+	if input.Purpose != "" {
+		booking.Purpose = input.Purpose
 	}
 
 	if err := config.DB.Save(&booking).Error; err != nil {

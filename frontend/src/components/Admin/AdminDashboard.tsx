@@ -6,7 +6,7 @@ import { useDeleteRoom } from '../../hooks/Room/useDeleteRoom';
 import { useDeleteBooking } from '../../hooks/Booking/useDeleteBooking';
 import { useApproveBooking } from '../../hooks/Approval/useApproveBooking';
 import { useRejectBooking } from '../../hooks/Approval/useRejectBooking';
-import { CheckCircle, XCircle, Clock, Calendar, Plus, Building2, Users, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Plus } from 'lucide-react';
 import Swal from 'sweetalert2';
 import useBookingFilters from '../../hooks/Booking/useBookingFilters';
 import type { Booking, BookingStats } from '../../types/booking';
@@ -19,7 +19,12 @@ import { Badge } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table';
+import { TableCell, TableRow } from '../ui/Table';
+import EditBookingModal from '../Booking/EditBookingModal';
+import { useUpdateBooking } from '../../hooks/Booking/useUpdateBooking';
+import BookingTable from './BookingTable';
+import RoomList from './RoomList';
+import StatsCards from './StatsCards';
 
 const ITEMS_PER_PAGE = 100;
 
@@ -149,12 +154,14 @@ const BookingRow = ({
   booking, 
   onApprove, 
   onReject, 
-  onDelete 
+  onDelete, 
+  onEdit 
 }: { 
   booking: Booking;
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (booking: Booking) => void;
 }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -216,6 +223,9 @@ const BookingRow = ({
               </Button>
             </>
           )}
+          <Button size="sm" variant="outline" onClick={() => onEdit(booking)}>
+            Edit
+          </Button>
           <Button size="sm" variant="outline" onClick={() => onDelete(booking.id)}>
             Delete
           </Button>
@@ -227,6 +237,19 @@ const BookingRow = ({
 
 export function AdminDashboard() {
   const { filter, setFilter, searchTerm, setSearchTerm, resetFilters } = useBookingFilters();
+  const [editBooking, setEditBooking] = useState<Booking | null>(null);
+  const updateBooking = useUpdateBooking();
+
+  const handleEditBookingSave = async (updated: Partial<Booking>) => {
+    if (!updated.id) return;
+    await updateBooking.mutateAsync({
+      id: updated.id,
+      purpose: updated.purpose,
+      start_time: updated.start_time,
+      end_time: updated.end_time,
+    });
+    setEditBooking(null);
+  };
 
   // Data fetching hooks
   const { data: bookingsData, isLoading: bookingsLoading, error: bookingsError } = useBookings({ 
@@ -345,31 +368,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatsCard 
-          title="Total Bookings" 
-          count={bookingStats.total} 
-          icon={Calendar} 
-        />
-        <StatsCard 
-          title="Pending Approval" 
-          count={bookingStats.pending} 
-          icon={Clock} 
-          variant="warning"
-        />
-        <StatsCard 
-          title="Approved" 
-          count={bookingStats.approved} 
-          icon={CheckCircle} 
-          variant="success"
-        />
-        <StatsCard 
-          title="Rejected" 
-          count={bookingStats.rejected} 
-          icon={XCircle} 
-          variant="destructive"
-        />
-      </div>
+      <StatsCards bookingStats={bookingStats} />
 
       {/* Main Content */}
       <Tabs defaultValue="bookings" className="space-y-6">
@@ -379,95 +378,21 @@ export function AdminDashboard() {
         </TabsList>
 
         <TabsContent value="bookings" className="space-y-6">
-          {/* Bookings Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Booking Management</CardTitle>
-              <CardDescription>View and manage all room bookings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Search bookings..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant={filter === 'all' ? 'default' : 'outline'}
-                    onClick={() => setFilter('all')}
-                    size="sm"
-                  >
-                    All ({bookingStats.total})
-                  </Button>
-                  <Button
-                    variant={filter === 'pending' ? 'default' : 'outline'}
-                    onClick={() => setFilter('pending')}
-                    size="sm"
-                  >
-                    Pending ({bookingStats.pending})
-                  </Button>
-                  <Button
-                    variant={filter === 'approved' ? 'default' : 'outline'}
-                    onClick={() => setFilter('approved')}
-                    size="sm"
-                  >
-                    Approved ({bookingStats.approved})
-                  </Button>
-                  <Button
-                    variant={filter === 'rejected' ? 'default' : 'outline'}
-                    onClick={() => setFilter('rejected')}
-                    size="sm"
-                  >
-                    Rejected ({bookingStats.rejected})
-                  </Button>
-                </div>
-                {(filter !== 'all' || searchTerm) && (
-                  <Button variant="ghost" onClick={resetFilters} size="sm">
-                    Clear
-                  </Button>
-                )}
-              </div>
-
-              {/* Bookings Table */}
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Room & Time</TableHead>
-                      <TableHead>Requestor</TableHead>
-                      <TableHead>Purpose</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredBookings.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
-                          <div className="text-muted-foreground">
-                            {filter === 'all' ? 'No bookings found' : `No ${filter} bookings found`}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredBookings.map((booking: Booking) => (
-                        <BookingRow
-                          key={booking.id}
-                          booking={booking}
-                          onApprove={handleApproveBooking}
-                          onReject={handleRejectBooking}
-                          onDelete={handleDeleteBooking}
-                        />
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <BookingTable
+            bookings={filteredBookings}
+            filter={filter}
+            setFilter={setFilter}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            resetFilters={resetFilters}
+            onApprove={handleApproveBooking}
+            onReject={handleRejectBooking}
+            onDelete={handleDeleteBooking}
+            onEdit={setEditBooking}
+            bookingStats={bookingStats}
+            bookingsLoading={bookingsLoading}
+            bookingsError={bookingsError}
+          />
         </TabsContent>
 
         <TabsContent value="rooms" className="space-y-6">
@@ -478,57 +403,19 @@ export function AdminDashboard() {
               isLoading={createRoom.isPending}
             />
 
-            {/* Existing Rooms */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  Existing Rooms
-                </CardTitle>
-                <CardDescription>Manage your meeting rooms</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {roomsWithBookingStatus.map((room: Room & { hasBookings: boolean }) => (
-                    <div key={room.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-medium">{room.name}</h4>
-                          {room.hasBookings && (
-                            <Badge variant="outline">
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              Has bookings
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{room.description}</p>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Users className="h-3 w-3" />
-                          <span>Capacity: {room.capacity}</span>
-                        </div>
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteRoom(room.id)}
-                        disabled={room.hasBookings}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  ))}
-                  
-                  {roomsWithBookingStatus.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No rooms found. Add your first room to get started.
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <RoomList
+              roomsWithBookingStatus={roomsWithBookingStatus}
+              onDeleteRoom={handleDeleteRoom}
+            />
           </div>
         </TabsContent>
       </Tabs>
+      <EditBookingModal
+        booking={editBooking}
+        open={!!editBooking}
+        onClose={() => setEditBooking(null)}
+        onSave={handleEditBookingSave}
+      />
     </div>
   );
 }

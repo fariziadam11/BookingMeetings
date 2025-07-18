@@ -51,7 +51,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(5 * time.Minute)
-			threshold := time.Now().Add(-30 * time.Hour)
+			threshold := time.Now().Add(-2 * time.Hour)
 			result := config.DB.Where("end_time < ?", threshold).Delete(&models.Booking{})
 			if result.Error != nil {
 				log.Println("Auto-delete booking error:", result.Error)

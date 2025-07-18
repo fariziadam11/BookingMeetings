@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import RoomSchedule from '../components/Room/RoomSchedule';
 import BookingForm from '../components/Booking/BookingForm';
 import { Layout } from '../components/Layout/Layout';
-import { Calendar, Users, MapPin, Plus, Building2 } from 'lucide-react';
+import { Calendar, Users, MapPin, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -81,7 +81,7 @@ export function RoomPage() {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="space-y-2">
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Building2 className="h-6 w-6 text-primary" />
+                  <img src="/img/gis.png" alt="Room" className="h-7 w-7 object-contain flex-shrink-0 rounded" />
                   {room.name}
                 </CardTitle>
                 {room.description && (
