@@ -1,0 +1,698 @@
+definitions:
+  handlers.CreateRoomInput:
+    properties:
+      capacity:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - capacity
+    - name
+    type: object
+  handlers.ForgotPasswordInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  handlers.LoginInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  handlers.RegisterInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  handlers.ResetPasswordInput:
+    properties:
+      email:
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+      otp:
+        type: string
+    required:
+    - email
+    - new_password
+    - otp
+    type: object
+  handlers.UpdateBookingInput:
+    properties:
+      end_time:
+        type: string
+      purpose:
+        type: string
+      room_id:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+    type: object
+  handlers.UpdateRoomInput:
+    properties:
+      capacity:
+        type: integer
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  models.CreateBookingInput:
+    properties:
+      attendees:
+        type: integer
+      end_time:
+        type: string
+      purpose:
+        type: string
+      room_id:
+        type: string
+      start_time:
+        type: string
+      user_email:
+        type: string
+      user_name:
+        type: string
+    required:
+    - attendees
+    - end_time
+    - purpose
+    - room_id
+    - start_time
+    - user_email
+    - user_name
+    type: object
+info:
+  contact: {}
+paths:
+  /api/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Request OTP for admin password reset
+      parameters:
+      - description: Forgot password info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ForgotPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Forgot password (admin)
+      tags:
+      - auth
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate admin and return JWT token
+      parameters:
+      - description: Admin login info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Login admin
+      tags:
+      - auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new admin user
+      parameters:
+      - description: Admin registration info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Register admin
+      tags:
+      - auth
+  /api/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset admin password using OTP
+      parameters:
+      - description: Reset password info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reset password (admin)
+      tags:
+      - auth
+  /api/bookings:
+    get:
+      consumes:
+      - application/json
+      description: Get list of bookings with optional pagination, room, and status
+        filter
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Room ID filter
+        in: query
+        name: room_id
+        type: string
+      - description: Booking status filter
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all bookings
+      tags:
+      - booking
+    post:
+      consumes:
+      - application/json
+      description: Create a new booking
+      parameters:
+      - description: Booking info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateBookingInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create booking
+      tags:
+      - booking
+  /api/bookings/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a booking by ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete booking
+      tags:
+      - booking
+    get:
+      consumes:
+      - application/json
+      description: Get detail of a booking by ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get booking detail
+      tags:
+      - booking
+    put:
+      consumes:
+      - application/json
+      description: Update a booking by ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Booking info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateBookingInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update booking
+      tags:
+      - booking
+  /api/bookings/approve/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Approve a booking by ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Approve booking
+      tags:
+      - booking
+  /api/bookings/delete/{token}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a booking using QR code token
+      parameters:
+      - description: QR Code Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete booking by QR token
+      tags:
+      - booking
+  /api/bookings/reject/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Reject a booking by ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reject booking
+      tags:
+      - booking
+  /api/rooms:
+    get:
+      consumes:
+      - application/json
+      description: Get list of rooms with optional pagination and name filter
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Room name filter
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all rooms
+      tags:
+      - room
+    post:
+      consumes:
+      - application/json
+      description: Create a new room
+      parameters:
+      - description: Room info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateRoomInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create room
+      tags:
+      - room
+  /api/rooms/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a room by ID
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete room
+      tags:
+      - room
+    get:
+      consumes:
+      - application/json
+      description: Get detail of a room by ID
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get room detail
+      tags:
+      - room
+    put:
+      consumes:
+      - application/json
+      description: Update an existing room by ID
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Room info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateRoomInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update room
+      tags:
+      - room
+swagger: "2.0"

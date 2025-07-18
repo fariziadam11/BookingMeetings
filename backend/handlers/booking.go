@@ -50,6 +50,19 @@ type BookingResponse struct {
 	ExtendedUntil   *time.Time `json:"extended_until,omitempty"`
 }
 
+// GetBookings godoc
+// @Summary Get all bookings
+// @Description Get list of bookings with optional pagination, room, and status filter
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   page     query  int     false  "Page number"
+// @Param   limit    query  int     false  "Items per page"
+// @Param   room_id  query  string  false  "Room ID filter"
+// @Param   status   query  string  false  "Booking status filter"
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings [get]
 func (h *BookingHandler) GetBookings(c *gin.Context) {
 	// Pagination
 	page := 1
@@ -133,6 +146,17 @@ func (h *BookingHandler) GetBookings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Data booking berhasil diambil", "data": bookingsWithQR})
 }
 
+// GetBookingByID godoc
+// @Summary Get booking detail
+// @Description Get detail of a booking by ID
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   id  path  string  true  "Booking ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/bookings/{id} [get]
 func (h *BookingHandler) GetBookingByID(c *gin.Context) {
 	id := c.Param("id")
 	bookingUUID, err := uuid.Parse(id)
@@ -186,6 +210,17 @@ func (h *BookingHandler) GetBookingByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Data booking berhasil diambil", "data": response})
 }
 
+// CreateBooking godoc
+// @Summary Create booking
+// @Description Create a new booking
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   input  body  models.CreateBookingInput  true  "Booking info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings [post]
 func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	var input models.CreateBookingInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -228,6 +263,18 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil dibuat", "data": booking})
 }
 
+// ApproveBooking godoc
+// @Summary Approve booking
+// @Description Approve a booking by ID
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   id  path  string  true  "Booking ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings/approve/{id} [patch]
 func (h *BookingHandler) ApproveBooking(c *gin.Context) {
 	id := c.Param("id")
 	bookingUUID, err := uuid.Parse(id)
@@ -272,6 +319,18 @@ func (h *BookingHandler) ApproveBooking(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil disetujui", "data": booking})
 }
 
+// RejectBooking godoc
+// @Summary Reject booking
+// @Description Reject a booking by ID
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   id  path  string  true  "Booking ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings/reject/{id} [patch]
 func (h *BookingHandler) RejectBooking(c *gin.Context) {
 	id := c.Param("id")
 	bookingUUID, err := uuid.Parse(id)
@@ -310,6 +369,19 @@ func (h *BookingHandler) RejectBooking(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil ditolak", "data": booking})
 }
 
+// UpdateBooking godoc
+// @Summary Update booking
+// @Description Update a booking by ID
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   id     path  string  true  "Booking ID"
+// @Param   input  body  UpdateBookingInput  true  "Booking info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings/{id} [put]
 func (h *BookingHandler) UpdateBooking(c *gin.Context) {
 	id := c.Param("id")
 	bookingUUID, err := uuid.Parse(id)
@@ -358,6 +430,18 @@ func (h *BookingHandler) UpdateBooking(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil diperbarui", "data": booking})
 }
 
+// DeleteBooking godoc
+// @Summary Delete booking
+// @Description Delete a booking by ID
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   id  path  string  true  "Booking ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings/{id} [delete]
 func (h *BookingHandler) DeleteBooking(c *gin.Context) {
 	id := c.Param("id")
 	bookingUUID, err := uuid.Parse(id)
@@ -378,6 +462,17 @@ func (h *BookingHandler) DeleteBooking(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Booking berhasil dihapus", "data": nil})
 }
 
+// DeleteBookingByToken godoc
+// @Summary Delete booking by QR token
+// @Description Delete a booking using QR code token
+// @Tags booking
+// @Accept  json
+// @Produce  json
+// @Param   token  path  string  true  "QR Code Token"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/bookings/delete/{token} [delete]
 func (h *BookingHandler) DeleteBookingByToken(c *gin.Context) {
 	token := c.Param("token")
 	var booking models.Booking

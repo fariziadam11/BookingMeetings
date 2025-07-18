@@ -12,6 +12,11 @@ import (
 	"fmt"
 	"os"
 
+	_ "backendgo/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -21,7 +26,7 @@ import (
 )
 
 func main() {
-	// Load environment variables from .env file
+
 	if err := godotenv.Load(); err != nil {
 		log.Println("Warning: .env file not found, using system environment variables")
 	}
@@ -44,21 +49,19 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// Middleware untuk inject EmailService ke context
 	r.Use(func(c *gin.Context) {
 		c.Set("emailService", emailService)
 		c.Next()
 	})
 
-	// Rate limiting: 5 requests per minute per IP
 	rate, _ := limiter.NewRateFromFormatted("5-M")
 	store := memory.NewStore()
 	rateLimiter := ginmiddleware.NewMiddleware(limiter.New(store, rate))
 
-	// Daftarkan route booking POST dengan rate limiter
 	r.POST("/api/bookings", rateLimiter, bookingHandler.CreateBooking)
-	// Daftarkan route lain seperti biasa
+
 	routes.RegisterRoutes(r, bookingHandler)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	go func() {
 		for {

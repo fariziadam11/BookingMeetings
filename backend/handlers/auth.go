@@ -44,6 +44,17 @@ type ResetPasswordInput struct {
 	NewPassword string `json:"new_password" binding:"required,min=6"`
 }
 
+// RegisterAdmin godoc
+// @Summary Register admin
+// @Description Register a new admin user
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   input  body  RegisterInput  true  "Admin registration info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/auth/register [post]
 func RegisterAdmin(c *gin.Context) {
 	var input RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -66,6 +77,18 @@ func RegisterAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Admin registered successfully", "data": nil})
 }
 
+// LoginAdmin godoc
+// @Summary Login admin
+// @Description Authenticate admin and return JWT token
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   input  body  LoginInput  true  "Admin login info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/auth/login [post]
 func LoginAdmin(c *gin.Context) {
 	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -102,6 +125,16 @@ func LoginAdmin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Login successful", "data": gin.H{"token": tokenString}})
 }
 
+// ForgotPassword godoc
+// @Summary Forgot password (admin)
+// @Description Request OTP for admin password reset
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   input  body  ForgotPasswordInput  true  "Forgot password info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /api/auth/forgot-password [post]
 func ForgotPassword(c *gin.Context) {
 	var input ForgotPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -133,6 +166,16 @@ func ForgotPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Jika email terdaftar, OTP telah dikirim."})
 }
 
+// ResetPassword godoc
+// @Summary Reset password (admin)
+// @Description Reset admin password using OTP
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param   input  body  ResetPasswordInput  true  "Reset password info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Router /api/auth/reset-password [post]
 func ResetPassword(c *gin.Context) {
 	var input ResetPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {

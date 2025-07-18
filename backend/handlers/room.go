@@ -10,6 +10,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// GetRooms godoc
+// @Summary Get all rooms
+// @Description Get list of rooms with optional pagination and name filter
+// @Tags room
+// @Accept  json
+// @Produce  json
+// @Param   page   query  int  false  "Page number"
+// @Param   limit  query  int  false  "Items per page"
+// @Param   name   query  string  false  "Room name filter"
+// @Success 200 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/rooms [get]
 func GetRooms(c *gin.Context) {
 	// Pagination
 	page := 1
@@ -40,6 +52,17 @@ func GetRooms(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Data ruangan berhasil diambil", "data": rooms})
 }
 
+// GetRoomDetail godoc
+// @Summary Get room detail
+// @Description Get detail of a room by ID
+// @Tags room
+// @Accept  json
+// @Produce  json
+// @Param   id  path  string  true  "Room ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Router /api/rooms/{id} [get]
 func GetRoomDetail(c *gin.Context) {
 	id := c.Param("id")
 	roomUUID, err := uuid.Parse(id)
@@ -69,6 +92,17 @@ type CreateRoomInput struct {
 	Capacity    int    `json:"capacity" binding:"required"`
 }
 
+// CreateRoom godoc
+// @Summary Create room
+// @Description Create a new room
+// @Tags room
+// @Accept  json
+// @Produce  json
+// @Param   input  body  CreateRoomInput  true  "Room info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/rooms [post]
 func CreateRoom(c *gin.Context) {
 	var input CreateRoomInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -94,6 +128,19 @@ type UpdateRoomInput struct {
 	Capacity    int    `json:"capacity"`
 }
 
+// UpdateRoom godoc
+// @Summary Update room
+// @Description Update an existing room by ID
+// @Tags room
+// @Accept  json
+// @Produce  json
+// @Param   id     path  string  true  "Room ID"
+// @Param   input  body  UpdateRoomInput  true  "Room info"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/rooms/{id} [put]
 func UpdateRoom(c *gin.Context) {
 	id := c.Param("id")
 	roomUUID, err := uuid.Parse(id)
@@ -131,6 +178,18 @@ func UpdateRoom(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Ruangan berhasil diperbarui", "data": room})
 }
 
+// DeleteRoom godoc
+// @Summary Delete room
+// @Description Delete a room by ID
+// @Tags room
+// @Accept  json
+// @Produce  json
+// @Param   id  path  string  true  "Room ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/rooms/{id} [delete]
 func DeleteRoom(c *gin.Context) {
 	id := c.Param("id")
 	roomUUID, err := uuid.Parse(id)
